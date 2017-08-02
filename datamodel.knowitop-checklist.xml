@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<itop_design xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.3">
+  <constants>
+  </constants>
+  <classes>
+    <class id="Checklist" _delta="define">
+      <parent>cmdbAbstractObject</parent>
+      <properties>
+        <comment><![CDATA[/**
+ * Checklist class
+ *
+ * @copyright   Copyright (C) 2017 Vladimir Kunin <v.b.kunin@gmail.com>
+ */]]></comment>
+        <category>bizmodel,searchable,structure</category>
+        <abstract>false</abstract>
+        <key_type>autoincrement</key_type>
+        <db_table>checklist</db_table>
+        <db_key_field>id</db_key_field>
+        <db_final_class_field/>
+        <naming>
+          <attributes>
+            <attribute id="title"/>
+          </attributes>
+        </naming>
+        <order>
+          <columns>
+            <!--<column id="id" ascending="true"/>-->
+          </columns>
+        </order>
+        <display_template/>
+        <icon>images/checklist48.png</icon>
+        <reconciliation>
+          <attributes>
+            <attribute id="title"/>
+          </attributes>
+        </reconciliation>
+      </properties>
+      <fields>
+
+        <field id="obj_class" xsi:type="AttributeString">
+          <sql>obj_class</sql>
+          <default_value/>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+        <field id="obj_key" xsi:type="AttributeObjectKey">
+          <sql>obj_key</sql>
+          <class_attcode>obj_class</class_attcode>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+
+        <!--<field id="org_id" xsi:type="AttributeInteger">-->
+        <!--<sql>org_id</sql>-->
+        <!--<default_value>0</default_value>-->
+        <!--<is_null_allowed>true</is_null_allowed>-->
+        <!--</field>-->
+
+        <field id="title" xsi:type="AttributeString">
+          <sql>title</sql>
+          <default_value/>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+        <field id="items_list" xsi:type="AttributeLinkedSet">
+          <linked_class>ChecklistItem</linked_class>
+          <ext_key_to_me>checklist_id</ext_key_to_me>
+          <edit_mode>in_place</edit_mode>
+          <count_min>0</count_min>
+          <count_max>0</count_max>
+          <duplicates/>
+        </field>
+        <!--<field id="status" xsi:type="AttributeEnum">-->
+        <!--<values>-->
+        <!--<value id="todo">todo</value>-->
+        <!--<value id="done">done</value>-->
+        <!--</values>-->
+        <!--<sql>status</sql>-->
+        <!--<default_value>todo</default_value>-->
+        <!--<is_null_allowed>false</is_null_allowed>-->
+        <!--<display_style>select</display_style>-->
+        <!--</field>-->
+        <!--<field id="progress" xsi:type="AttributePercentage">-->
+        <!--<sql>progress</sql>-->
+        <!--<default_value>0</default_value>-->
+        <!--<is_null_allowed>false</is_null_allowed>-->
+        <!--<tracking_level>none</tracking_level>-->
+        <!--</field>-->
+      </fields>
+      <methods/>
+      <presentation>
+        <details>
+          <items>
+            <item id="obj_key">
+              <rank>1</rank>
+            </item>
+            <item id="obj_class">
+              <rank>2</rank>
+            </item>
+            <item id="title">
+              <rank>10</rank>
+            </item>
+            <!--<item id="status">-->
+            <!--<rank>20</rank>-->
+            <!--</item>-->
+            <!--<item id="progress">-->
+            <!--<rank>30</rank>-->
+            <!--</item>-->
+            <item id="items_list">
+              <rank>40</rank>
+            </item>
+          </items>
+        </details>
+        <search>
+          <items>
+            <!--<item id="obj_key">-->
+            <!--<rank>1</rank>-->
+            <!--</item>-->
+            <!--<item id="obj_class">-->
+            <!--<rank>2</rank>-->
+            <!--</item>-->
+            <item id="title">
+              <rank>10</rank>
+            </item>
+            <!--<item id="status">-->
+            <!--<rank>20</rank>-->
+            <!--</item>-->
+            <!--<item id="progress">-->
+            <!--<rank>30</rank>-->
+            <!--</item>-->
+          </items>
+        </search>
+        <list>
+          <items>
+            <!--<item id="obj_key">-->
+            <!--<rank>1</rank>-->
+            <!--</item>-->
+            <!--<item id="obj_class">-->
+            <!--<rank>2</rank>-->
+            <!--</item>-->
+            <item id="title">
+              <rank>10</rank>
+            </item>
+            <!--<item id="status">-->
+            <!--<rank>20</rank>-->
+            <!--</item>-->
+            <!--<item id="progress">-->
+            <!--<rank>30</rank>-->
+            <!--</item>-->
+          </items>
+        </list>
+      </presentation>
+    </class>
+    <class id="ChecklistItem" _delta="define">
+      <parent>cmdbAbstractObject</parent>
+      <properties>
+        <comment><![CDATA[/**
+ * Checklist class
+ *
+ * @copyright   Copyright (C) 2017 Vladimir Kunin <v.b.kunin@gmail.com>
+ */]]></comment>
+        <category>bizmodel,searchable</category>
+        <abstract>false</abstract>
+        <key_type>autoincrement</key_type>
+        <db_table>checklistitem</db_table>
+        <db_key_field>id</db_key_field>
+        <db_final_class_field/>
+        <naming>
+          <attributes>
+            <attribute id="checklist_title"/>
+            <attribute id="text"/>
+          </attributes>
+        </naming>
+        <order>
+          <columns>
+            <column id="key" ascending="true"/>
+          </columns>
+        </order>
+        <display_template/>
+        <icon>images/checkbox48.png</icon>
+        <reconciliation>
+          <attributes>
+            <attribute id="text"/>
+            <attribute id="checklist_id"/>
+          </attributes>
+        </reconciliation>
+      </properties>
+      <fields>
+        <field id="checklist_id" xsi:type="AttributeExternalKey">
+          <sql>checklist_id</sql>
+          <target_class>Checklist</target_class>
+          <is_null_allowed>false</is_null_allowed>
+          <on_target_delete>DEL_AUTO</on_target_delete>
+        </field>
+        <field id="checklist_title" xsi:type="AttributeExternalField">
+          <extkey_attcode>checklist_id</extkey_attcode>
+          <target_attcode>title</target_attcode>
+        </field>
+        <field id="text" xsi:type="AttributeString">
+          <sql>text</sql>
+          <default_value/>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+        <field id="state" xsi:type="AttributeBoolean">
+          <sql>state</sql>
+          <default_value>0</default_value>
+          <is_null_allowed>true</is_null_allowed>
+        </field>
+        <field id="key" xsi:type="AttributeInteger">
+          <sql>key</sql>
+          <default_value/>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+        <field id="created_at" xsi:type="AttributeDateTime">
+          <sql>created_at</sql>
+          <default_value/>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+        <field id="checked_at" xsi:type="AttributeDateTime">
+          <sql>checked_at</sql>
+          <default_value/>
+          <is_null_allowed>true</is_null_allowed>
+        </field>
+      </fields>
+      <methods>
+        <method id="OnInsert">
+          <static>false</static>
+          <access>protected</access>
+          <type>Overload-DBObject</type>
+          <code>
+            <![CDATA[
+          protected function OnInsert()
+          {
+            // TODO: сделать нормальную сортировку
+            $this->Set('key', MetaModel::GetNextKey(get_class($this)));
+            $this->SetCurrentDate('created_at');
+          }
+          ]]>
+          </code>
+        </method>
+        <method id="OnUpdate">
+          <static>false</static>
+          <access>protected</access>
+          <type>Overload-DBObject</type>
+          <code>
+            <![CDATA[
+          protected function OnUpdate()
+          {
+            if ($this->IsChecked() && array_key_exists('state', $this->ListChanges()))
+            {
+              $this->SetCurrentDate('checked_at');
+            }
+            else
+            {
+              $this->Reset('checked_at');
+            }
+          }
+          ]]>
+          </code>
+        </method>
+        <method id="IsChecked">
+          <static>false</static>
+          <access>protected</access>
+          <type>Overload-DBObject</type>
+          <code>
+            <![CDATA[
+          protected function IsChecked()
+          {
+            return $this->Get('state') === true;
+          }
+          ]]>
+          </code>
+        </method>
+      </methods>
+      <presentation>
+        <details>
+          <items>
+            <item id="checklist_id">
+              <rank>5</rank>
+            </item>
+            <item id="text">
+              <rank>10</rank>
+            </item>
+            <item id="state">
+              <rank>20</rank>
+            </item>
+          </items>
+        </details>
+        <search>
+          <items>
+            <item id="text">
+              <rank>10</rank>
+            </item>
+            <item id="state">
+              <rank>20</rank>
+            </item>
+          </items>
+        </search>
+        <list>
+          <items>
+            <item id="text">
+              <rank>10</rank>
+            </item>
+            <item id="state">
+              <rank>20</rank>
+            </item>
+          </items>
+        </list>
+      </presentation>
+    </class>
+
+    <!--TODO: To advanced checklist module?-->
+    <class id="ChecklistTemplate" _delta="define">
+      <parent>ObjectTemplate</parent>
+      <php_parent>
+        <name>_ChecklistTemplate</name>
+      </php_parent>
+      <properties>
+        <category>bizmodel,searchable</category>
+        <abstract>false</abstract>
+        <key_type>autoincrement</key_type>
+        <db_table>objecttemplate_checklist</db_table>
+        <db_key_field>id</db_key_field>
+        <db_final_class_field/>
+        <naming>
+          <attributes>
+            <attribute id="name"/>
+          </attributes>
+        </naming>
+        <display_template/>
+        <reconciliation>
+          <attributes>
+            <attribute id="name"/>
+          </attributes>
+        </reconciliation>
+      </properties>
+      <fields>
+        <field id="title" xsi:type="AttributeString">
+          <sql>title</sql>
+          <default_value/>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+        <field id="items_text" xsi:type="AttributeText">
+          <sql>items_text</sql>
+          <default_value/>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+      </fields>
+      <methods/>
+      <presentation>
+        <details>
+          <items>
+            <item id="col:col1">
+              <rank>10</rank>
+              <items>
+                <item id="fieldset:ObjectTemplate:baseinfo">
+                  <rank>10</rank>
+                  <items>
+                    <item id="name">
+                      <rank>10</rank>
+                    </item>
+                    <item id="status">
+                      <rank>20</rank>
+                    </item>
+                    <item id="description">
+                      <rank>30</rank>
+                    </item>
+                  </items>
+                </item>
+              </items>
+            </item>
+            <item id="col:col2">
+              <rank>20</rank>
+              <items>
+                <item id="fieldset:ObjectTemplate:template">
+                  <rank>10</rank>
+                  <items>
+                    <item id="title">
+                      <rank>10</rank>
+                    </item>
+                    <item id="items_text">
+                      <rank>20</rank>
+                    </item>
+                  </items>
+                </item>
+              </items>
+            </item>
+          </items>
+        </details>
+        <search>
+          <items>
+            <item id="name">
+              <rank>10</rank>
+            </item>
+            <item id="status">
+              <rank>20</rank>
+            </item>
+            <item id="title">
+              <rank>30</rank>
+            </item>
+          </items>
+        </search>
+        <list>
+          <items>
+            <item id="name">
+              <rank>10</rank>
+            </item>
+            <item id="status">
+              <rank>20</rank>
+            </item>
+            <item id="title">
+              <rank>30</rank>
+            </item>
+          </items>
+        </list>
+      </presentation>
+    </class>
+  </classes>
+  <menus>
+    <!--TODO: checklist menu-->
+    <!--<menu id="WorkOrderManagement" xsi:type="MenuGroup" _delta="define">-->
+      <!--<rank>58</rank>-->
+    <!--</menu>-->
+    <!--<menu id="Calendar:Overview" xsi:type="DashboardMenuNode" _delta="define">-->
+      <!--<rank>0</rank>-->
+      <!--<parent>WorkOrderManagement</parent>-->
+      <!--<definition>-->
+        <!--<layout>DashboardLayoutOneCol</layout>-->
+        <!--<title>UI:WorkOrderMgmtMenuOverview:Title</title>-->
+        <!--<auto_reload>-->
+          <!--<enabled>false</enabled>-->
+          <!--<interval>300</interval>-->
+        <!--</auto_reload>-->
+        <!--<cells>-->
+          <!--<cell id="0">-->
+            <!--<rank>0</rank>-->
+            <!--<dashlets>-->
+              <!--<dashlet id="1" xsi:type="DashletCalendar">-->
+                <!--<rank>0</rank>-->
+                <!--<title>UI:WorkOrderCalendar:Title</title>-->
+                <!--<query>SELECT WorkOrder</query>-->
+              <!--</dashlet>-->
+            <!--</dashlets>-->
+          <!--</cell>-->
+          <!--<cell id="1">-->
+            <!--<rank>1</rank>-->
+            <!--<dashlets>-->
+              <!--<dashlet id="2" xsi:type="DashletEmptyCell">-->
+                <!--<rank>0</rank>-->
+              <!--</dashlet>-->
+            <!--</dashlets>-->
+          <!--</cell>-->
+        <!--</cells>-->
+      <!--</definition>-->
+    <!--</menu>-->
+    <!--<menu id="WorkOrderMgmt:Shortcuts" xsi:type="TemplateMenuNode" _delta="define">-->
+      <!--<rank>5</rank>-->
+      <!--<parent>WorkOrderManagement</parent>-->
+      <!--<template_file/>-->
+    <!--</menu>-->
+    <!--<menu id="WorkOrderMgmt:NewWorkOrder" xsi:type="NewObjectMenuNode" _delta="define">-->
+      <!--<rank>1</rank>-->
+      <!--<parent>WorkOrderMgmt:Shortcuts</parent>-->
+      <!--<class>WorkOrder</class>-->
+    <!--</menu>-->
+    <!--<menu id="WorkOrderMgmt:MyWorkOrders" xsi:type="OQLMenuNode" _delta="define">-->
+      <!--<rank>2</rank>-->
+      <!--<parent>WorkOrderMgmt:Shortcuts</parent>-->
+      <!--<oql><![CDATA[SELECT WorkOrder WHERE agent_id = :current_contact_id AND status NOT IN ("closed")]]></oql>-->
+      <!--<do_search/>-->
+    <!--</menu>-->
+    <!--<menu id="WorkOrderMgmt:OpenWorkOrders" xsi:type="OQLMenuNode" _delta="define">-->
+      <!--<rank>3</rank>-->
+      <!--<parent>WorkOrderMgmt:Shortcuts</parent>-->
+      <!--<oql><![CDATA[SELECT WorkOrder WHERE status IN ("open")]]></oql>-->
+      <!--<do_search>1</do_search>-->
+    <!--</menu>-->
+    <!--<menu id="WorkOrderMgmt:SearchWorkOrder" xsi:type="SearchMenuNode" _delta="define">-->
+      <!--<rank>4</rank>-->
+      <!--<parent>WorkOrderMgmt:Shortcuts</parent>-->
+      <!--<class>WorkOrder</class>-->
+    <!--</menu>-->
+    <!--<menu id="ScheduledActivity:Shortcuts" xsi:type="TemplateMenuNode" _delta="define">-->
+      <!--<rank>6</rank>-->
+      <!--<parent>WorkOrderManagement</parent>-->
+      <!--<template_file/>-->
+    <!--</menu>-->
+    <!--<menu id="ScheduledActivity:NewScheduledActivity" xsi:type="NewObjectMenuNode" _delta="define">-->
+      <!--<rank>1</rank>-->
+      <!--<parent>ScheduledActivity:Shortcuts</parent>-->
+      <!--<class>ScheduledActivity</class>-->
+    <!--</menu>-->
+    <!--<menu id="ScheduledActivity:AllScheduledActivity" xsi:type="OQLMenuNode" _delta="define">-->
+      <!--<rank>2</rank>-->
+      <!--<parent>ScheduledActivity:Shortcuts</parent>-->
+      <!--<oql><![CDATA[SELECT ScheduledActivity]]></oql>-->
+      <!--<do_search>1</do_search>-->
+    <!--</menu>-->
+  </menus>
+  <user_rights>
+    <!--TODO: права-->
+    <!--<groups>-->
+      <!--<group id="ScheduledActivity" _delta="define">-->
+        <!--<classes>-->
+          <!--<class id="ScheduledActivity"/>-->
+          <!--<class id="ScheduledActivityCategory"/>-->
+          <!--<class id="lnkDocumentToTicket"/>-->
+        <!--</classes>-->
+      <!--</group>-->
+    <!--</groups>-->
+    <!--<profiles>-->
+      <!--<profile id="101" _delta="define">-->
+        <!--<name>Scheduled Activity Manager</name>-->
+        <!--<description>Person who manages the Scheduled Activity objects</description>-->
+        <!--<groups>-->
+          <!--<group id="ScheduledActivity">-->
+            <!--<actions>-->
+              <!--<action id="action:delete">allow</action>-->
+              <!--<action id="action:write">allow</action>-->
+              <!--<action id="action:bulk write">allow</action>-->
+              <!--<action id="stimulus:ev_activate">allow</action>-->
+              <!--<action id="stimulus:ev_deactivate">allow</action>-->
+            <!--</actions>-->
+          <!--</group>-->
+          <!--<group id="Ticketing">-->
+            <!--<actions>-->
+              <!--<action id="action:delete">allow</action>-->
+              <!--<action id="action:write">allow</action>-->
+              <!--<action id="action:bulk write">allow</action>-->
+              <!--<action id="stimulus:ev_close">allow</action>-->
+            <!--</actions>-->
+          <!--</group>-->
+          <!--<group id="*">-->
+            <!--<actions>-->
+              <!--<action id="action:read">allow</action>-->
+              <!--<action id="action:bulk read">allow</action>-->
+            <!--</actions>-->
+          <!--</group>-->
+        <!--</groups>-->
+      <!--</profile>-->
+    <!--</profiles>-->
+  </user_rights>
+</itop_design>
