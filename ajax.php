@@ -37,12 +37,13 @@ try
 
         case 'add_item':
             $sChecklistId = utils::ReadParam('checklist_id', '', false, 'integer');
+            $oChecklist = MetaModel::GetObject('Checklist', $sChecklistId);
             $sText = utils::ReadParam('text', '', false, 'string');
             $oItem = MetaModel::NewObject('ChecklistItem');
             $oItem->Set('checklist_id', $sChecklistId);
             $oItem->Set('text', $sText);
             $aResult['id'] = $oItem->DBWrite();
-            $aResult['html'] = ChecklistPlugin::RenderChecklistItem($oItem);
+            $aResult['html'] = $oChecklist->RenderItem($oItem);
             echo json_encode($aResult);
             break;
 
@@ -77,7 +78,7 @@ try
             $oChecklist->Set('obj_class', $sHostClass);
             $oChecklist->DBWrite();
             $aResult['id'] = $oChecklist->GetKey();
-            $aResult['html'] .= ChecklistPlugin::RenderChecklist($oChecklist, $bEditMode);
+            $aResult['html'] .= $oChecklist->Render($bEditMode);
             echo json_encode($aResult);
             break;
 
@@ -123,7 +124,7 @@ try
             $bEditMode = utils::ReadParam('edit_mode', '') === '1';
 
             $oHostObj = MetaModel::GetObject($sHostClass, $sHostId, true);
-            $aContext = $oHostObj->ToArgs('this'); // TODO: для замены плейсхолдеров в шаблонах
+            //$aContext = $oHostObj->ToArgs('this'); // TODO: для замены плейсхолдеров в шаблонах
 
             // if (!empty($sJson))
             // {
@@ -142,9 +143,15 @@ try
                 $oTemplate = MetaModel::GetObject('ChecklistTemplate', $iId, false);
                 if ($oTemplate !== null)
                 {
-                    $oChecklist = $oTemplate->CreateTargetObject(array('item_object' => $oHostObj));
+                    //$oChecklist = $oTemplate->CreateTargetObject(array('item_object' => $oHostObj));
+                    $oChecklist = MetaModel::NewObject('Checklist');
+                    $oChecklist->Set('obj_key', $oHostObj->GetKey());
+                    $oChecklist->Set('obj_class', $oHostObj->Get('finalclass'));
+                    $oChecklist->FillFromTemplate($oTemplate); // method from TemplateInterface
+                    $oChecklist->DBWrite();
                     $aResult['id'] = $oChecklist->GetKey();
-                    $aResult['html'] .= ChecklistPlugin::RenderChecklist($oChecklist, $bEditMode);
+                    $aResult['html'] .= $oChecklist->Render($bEditMode);
+//                    $aResult['html'] .= ChecklistPlugin::RenderChecklist($oChecklist, $bEditMode);
                 }
             }
             echo json_encode($aResult);

@@ -4,7 +4,10 @@
   </constants>
   <classes>
     <class id="Checklist" _delta="define">
-      <parent>cmdbAbstractObject</parent>
+      <parent>DBObject</parent>
+      <php_parent>
+        <name>_Checklist</name>
+      </php_parent>
       <properties>
         <comment><![CDATA[/**
  * Checklist class
@@ -47,13 +50,11 @@
           <class_attcode>obj_class</class_attcode>
           <is_null_allowed>false</is_null_allowed>
         </field>
-
-        <!--<field id="org_id" xsi:type="AttributeInteger">-->
-        <!--<sql>org_id</sql>-->
-        <!--<default_value>0</default_value>-->
-        <!--<is_null_allowed>true</is_null_allowed>-->
-        <!--</field>-->
-
+        <field id="obj_org_id" xsi:type="AttributeInteger">
+        <sql>obj_org_id</sql>
+        <default_value>0</default_value>
+        <is_null_allowed>true</is_null_allowed>
+        </field>
         <field id="title" xsi:type="AttributeString">
           <sql>title</sql>
           <default_value/>
@@ -93,6 +94,9 @@
             </item>
             <item id="obj_class">
               <rank>2</rank>
+            </item>
+            <item id="obj_org_id">
+              <rank>3</rank>
             </item>
             <item id="title">
               <rank>10</rank>
@@ -149,7 +153,7 @@
       </presentation>
     </class>
     <class id="ChecklistItem" _delta="define">
-      <parent>cmdbAbstractObject</parent>
+      <parent>DBObject</parent>
       <properties>
         <comment><![CDATA[/**
  * Checklist class
@@ -192,6 +196,10 @@
         <field id="checklist_title" xsi:type="AttributeExternalField">
           <extkey_attcode>checklist_id</extkey_attcode>
           <target_attcode>title</target_attcode>
+        </field>
+        <field id="checklist_org_id" xsi:type="AttributeExternalField">
+          <extkey_attcode>checklist_id</extkey_attcode>
+          <target_attcode>obj_org_id</target_attcode>
         </field>
         <field id="text" xsi:type="AttributeString">
           <sql>text</sql>
@@ -268,6 +276,29 @@
           ]]>
           </code>
         </method>
+        <methods>
+          <method id="MapContextParam">
+            <comment><![CDATA[/**
+	 * Maps the given context parameter name to the appropriate filter/search code for this class
+	 * @param string $sContextParam Name of the context parameter, e.g. 'org_id'
+	 * @return string Filter code, e.g. 'customer_id'
+	 */]]></comment>
+            <static>true</static>
+            <access>public</access>
+            <type>Overload-ExNihilo</type>
+            <code><![CDATA[	public static function MapContextParam($sContextParam)
+	{
+		if ($sContextParam == 'org_id')
+		{
+			return 'checklist_org_id';
+		}
+		else
+		{
+			return null;
+		}
+	}]]></code>
+          </method>
+        </methods>
       </methods>
       <presentation>
         <details>
@@ -309,9 +340,6 @@
     <!--TODO: To advanced checklist module?-->
     <class id="ChecklistTemplate" _delta="define">
       <parent>ObjectTemplate</parent>
-      <php_parent>
-        <name>_ChecklistTemplate</name>
-      </php_parent>
       <properties>
         <category>bizmodel,searchable</category>
         <abstract>false</abstract>
@@ -399,9 +427,6 @@
         </search>
         <list>
           <items>
-            <item id="name">
-              <rank>10</rank>
-            </item>
             <item id="status">
               <rank>20</rank>
             </item>
