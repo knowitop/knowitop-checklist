@@ -95,69 +95,53 @@ class ChecklistPlugin implements \iApplicationUIExtension, \iApplicationObjectEx
     protected function IsTargetObject($oObject)
     {
         $aAllowedClasses = \MetaModel::GetModuleSetting(self::MODULE_NAME, 'allowed_classes', array());
-        foreach($aAllowedClasses as $sAllowedClass)
-        {
-            if ($oObject instanceof $sAllowedClass)
-            {
+        foreach ($aAllowedClasses as $sAllowedClass) {
+            if ($oObject instanceof $sAllowedClass) {
                 return true;
             }
         }
         return false;
     }
 
-    protected static function IsEditInPlace()
+    public static function IsEditInPlaceAllowed()
     {
         return \MetaModel::GetModuleSetting(ChecklistPlugin::MODULE_NAME, 'edit_in_place', true);
     }
 
+
+    /*
+     * Чек-лист отображается на вкладке, если у пользователя есть достут на чтение хост-объекта.
+     * Если доступа нет, хост-объект не будет загружен, => не будет чек-листа.
+     *
+     * Редактирование чек-листа доступно на вкладке, если у пользователя есть права на изменение
+     * хост-объекта.
+     *
+     * Чек-лист доступен по прямой ссылке или через поиск, когда у пользователя есть доступ
+     * к org_id хоста (org_id чек-листа берется org_id хоста, если представлено). С элементами
+     * чек-листа аналогично. За проверку прав тут овечает iTop.
+     */
+
     public function DisplayChecklists(\DBObject $oHost, \iTopWebPage $oPage, $bEditMode = false)
     {
 
-        $bEditMode = self::IsEditInPlace() || $bEditMode;
-
-        $sApiUrl = \utils::GetAbsoluteUrlModulesRoot().self::MODULE_NAME.'/ajax.php';
-        $iHostObjId = $oHost->GetKey();
-        $sHostObjClass = get_class($oHost);
-        $oPage->add_script(
-<<<EOF
-    var checklistApi = new ChecklistAPI({
-        url: '$sApiUrl',
-        hostId: $iHostObjId,
-        hostClass: '$sHostObjClass'
-    });
-EOF
-        );
-
-        // TODO: тут проверка прав пользователя есть?
-        /*
-         * Чек-лист отображается на вкладке, если у пользователя есть достут на чтение хост-объекта.
-         * Если доступа нет, хост-объект не будет загружен, не будет и чек-листа.
-         *
-         * Редактирование чек-листа
-         *
-         * Чек-лист доступен по прямой ссылке, когда у пользователя есть доступ
-         * к org_id хоста (org_id чек-листа берется org_id хоста). С элементами чек-листа аналогично.
-         */
-
+        $bEditMode = $bEditMode || self::IsEditInPlaceAllowed();
+        $oPage->add_linked_stylesheet(\utils::GetAbsoluteUrlModulesRoot().self::MODULE_NAME.'/css/checklist.css');
 
         $oSearch = \DBObjectSearch::FromOQL("SELECT Checklist WHERE obj_class = :class AND obj_key = :obj_key");
         $oSet = new \DBObjectSet($oSearch, array(), array('class' => get_class($oHost), 'obj_key' => $oHost->GetKey()));
 
-        $oPage->add_linked_stylesheet(\utils::GetAbsoluteUrlModulesRoot().self::MODULE_NAME.'/css/checklist.css');
-
-        //TODO: сделать выбор: отображать кол-во чек-листов или сумму элементов на вклдаке?
-        $sTabLabel = ($oSet->Count() > 0) ? \Dict::Format('Checklist:TabTitle_Count', $oSet->Count()) : \Dict::S('Checklist:EmptyTabTitle');
+        // Display tab and header
+        $sTabLabel = $oSet->Count() > 0 ? \Dict::Format('Checklist:TabTitle_Count', $oSet->Count()) : \Dict::S('Checklist:EmptyTabTitle');
         $oPage->SetCurrentTab($sTabLabel);
         $oPage->p(\MetaModel::GetClassIcon('Checklist').'&nbsp;'.\Dict::S('Checklist:TabTitle+'));
 
-        while($oChecklist = $oSet->Fetch())
-        {
-            //$oPage->add(self::RenderChecklist($oChecklist, $bEditMode));
+        // Display checklists
+        while ($oChecklist = $oSet->Fetch()) {
             $oPage->add($oChecklist->Render($bEditMode));
         }
 
-        if ($bEditMode && UserRights::IsActionAllowed(get_class($oHost), UR_ACTION_MODIFY)) {
-            // Если пользователь имеет права на хост-объект, то он может добавлять и удалять чек-листы
+        // Display actions if current user has rights to modify host object
+        if ($bEditMode && UserRights::IsActionAllowed(get_class($oHost), UR_ACTION_MODIFY, DBObjectSet::FromObject($oHost))) {
             $sNewListDiv = el('div.checklist-new-list', null, array(
                 el('a.checklist-btn', array('data-checklist-action' => 'create_list'), \Dict::S('Checklist:Button:NewList')),
                 el('a.checklist-btn', array('data-checklist-action' => 'create_list_from_template'), \Dict::S('Checklist:Button:NewListFromTmpl')),
@@ -165,8 +149,22 @@ EOF
             $oPage->add($sNewListDiv);
         }
 
-        // TODO: разбить скрипт на 2: для редактировани и использования чек-листов
+        // Load js scripts
         $oPage->add_linked_script("../js/wizardhelper.js");
+        $sApiUrl = \utils::GetAbsoluteUrlModulesRoot().self::MODULE_NAME.'/ajax.php';
+        $iHostObjId = $oHost->GetKey();
+        $sHostObjClass = get_class($oHost);
+
+        // TODO: разбить скрипты на 2: для редактировани и использования чек-листов
+        $oPage->add_script(
+ <<<EOF
+    var checklistApi = new ChecklistAPI({
+        url: '$sApiUrl',
+        hostId: $iHostObjId,
+        hostClass: '$sHostObjClass'
+    });
+EOF
+        );
         $oPage->add_linked_script(\utils::GetAbsoluteUrlModulesRoot().self::MODULE_NAME.'/js/checklist.js');
     }
 
@@ -179,73 +177,6 @@ EOF
             $oChecklist->SetHostObject($oObject, true);
         }
     }
-
-
-//
-//    public static function RenderChecklist(\DBObject $oChecklist, $bEditMode = false) {
-//
-//        $bEditMode = self::IsEditInPlace() || $bEditMode;
-//
-//        $iChecklistId = $oChecklist->GetKey();
-//        $sChecklistName = $oChecklist->GetName();
-//        $aChecklistItems = array();
-//        $oItemSet = $oChecklist->Get('items_list');
-//        while($oItem = $oItemSet->Fetch())
-//            array_push($aChecklistItems, el('li', null, self::RenderChecklistItem($oItem, $bEditMode)));
-//
-//        $sChecklistActions = !$bEditMode ? '' : el('div.checklist-new-item', null, array(
-//            el('a.checklist-btn.quiet', array('data-checklist-action' => 'new_item'), \Dict::S('Checklist:Button:NewItem')),
-//            el('input.checklist-item-text-input', array('name' => 'newItemText', 'maxlength' => 255, 'placeholder' => \Dict::S('Checklist:NewItemPlaceholder'))),
-//            el('a.checklist-btn.quiet', array('data-checklist-action' => 'remove_list'), \Dict::S('Checklist:Button:RemoveList')),
-//            el('div.checklist-item-actions', null, array(
-//                    el('a.checklist-btn.quiet', array('data-checklist-action' => 'save_item'), \Dict::S('Checklist:Button:Apply')),
-//                    el('a.checklist-btn.quiet', array('data-checklist-action' => 'cancel_item'), \Dict::S('Checklist:Button:Cancel')))
-//            )
-//        ));
-//
-//        $sHtml = el('div.checklist', array('data-checklist-id' => $iChecklistId, 'data-checklist-name' => $sChecklistName), array(
-//            el('h3.checklist-title', array('data-checklist-id'=> $iChecklistId), $sChecklistName),
-//            el('ol.checklist-items', null, $aChecklistItems),
-//            $sChecklistActions
-//        ));
-//
-//        return $sHtml;
-//    }
-//
-//    public static function RenderChecklistItem(\DBObject $oItem, $bEditMode = false)
-//    {
-//        // TODO: Пользователь имеет права на этот чеклист?
-//        $iItemId = $oItem->GetKey();
-//        $sItemText = $oItem->Get('text');
-//        $sItemCheckedAt = $oItem->GetAsHTML('checked_at');
-//        $sCheckedAttr = $oItem->Get('state') == 1 ? 'checked' : '';
-//        $sCheckedClass = $sCheckedAttr ? 'checklist-item-state-complete' : '';
-//
-//        // TODO: Пользователь имеет права на изменение?
-//        // TODO: Это изменяемый чек-лист?
-//        $sEditSection = '';
-//        if ($bEditMode) {
-//            $sTextInput = el('input.checklist-item-text-input',  array('type' => 'text', 'name' => 'itemText', 'value' =>$sItemText, 'maxlength' => 255));
-//            $sButtons = el('div.checklist-item-actions', null, array(
-//                el('a.checklist-btn quiet', array('data-item-action' => 'edit'), \Dict::S('Checklist:Button:Edit')),
-//                el('a.checklist-btn quiet', array('data-item-action' => 'remove'), \Dict::S('Checklist:Button:Remove')),
-//                el('a.checklist-btn quiet', array('data-item-action' => 'apply'), \Dict::S('Checklist:Button:Apply')),
-//                el('a.checklist-btn quiet', array('data-item-action' => 'cancel'), \Dict::S('Checklist:Button:Cancel')),
-//            ));
-//            $sEditSection = $sTextInput . $sButtons;
-//        }
-//
-//        $sHtml = el('div.checklist-item.'.$sCheckedClass, array('data-item-id' => $iItemId), array(
-//            el('div.checklist-item-checkbox', null,
-//                el('input', array('type' => 'checkbox', 'name' => 'itemState', $sCheckedAttr))
-//            ),
-//            el('div.checklist-item-text', null, $sItemText),
-//            el('div.checklist-item-checked-at.quiet', null, $sItemCheckedAt),
-//            $sEditSection
-//        ));
-//
-//        return $sHtml;
-//    }
 }
 
 class _Checklist extends DBObject implements \Knowitop\TemplateInterface
@@ -269,22 +200,27 @@ class _Checklist extends DBObject implements \Knowitop\TemplateInterface
         }
     }
 
-    public function IsEditAllowed() {
+    // TODO: Move to Checklist class
+    public function IsEditAllowed()
+    {
         $oHost = $this->GetHostObject();
-        return UserRights::IsActionAllowed(get_class($oHost), UR_ACTION_MODIFY, DBObjectSet::FromObject($oHost)) === UR_ALLOWED_YES;
+        return UserRights::IsActionAllowed(get_class($oHost), UR_ACTION_MODIFY, DBObjectSet::FromObject($oHost));
     }
 
-    public function Render($bEditMode = false) {
+    public function Render($bEditMode = false)
+    {
+        $bEditMode = $this->IsEditAllowed() && $bEditMode;
 
-        $iChecklistId = $this->GetKey();
-        $sChecklistName = $this->GetName();
-        $aChecklistItems = array();
+        // Render items
         $oItemSet = $this->Get('items_list');
-        while($oItem = $oItemSet->Fetch())
-            array_push($aChecklistItems, el('li', null, self::RenderItem($oItem, $bEditMode && $this->IsEditAllowed())));
+        $aChecklistItems = array();
+        while ($oItem = $oItemSet->Fetch()) {
+            array_push($aChecklistItems, el('li', null, self::RenderItem($oItem, $bEditMode)));
+        }
 
+        // Render actions
         $sChecklistActions = '';
-        if ($bEditMode && $this->IsEditAllowed()) {
+        if ($bEditMode) {
             $sChecklistActions = el('div.checklist-new-item', null, array(
                     el('a.checklist-btn.quiet', array('data-checklist-action' => 'new_item'), \Dict::S('Checklist:Button:NewItem')),
                     el('input.checklist-item-text-input', array('name' => 'newItemText', 'maxlength' => 255, 'placeholder' => \Dict::S('Checklist:NewItemPlaceholder'))),
@@ -297,8 +233,11 @@ class _Checklist extends DBObject implements \Knowitop\TemplateInterface
             );
         }
 
+        // Render checklist
+        $iChecklistId = $this->GetKey();
+        $sChecklistName = $this->GetName() . " ($iChecklistId)";
         $sHtml = el('div.checklist', array('data-checklist-id' => $iChecklistId, 'data-checklist-name' => $sChecklistName), array(
-            el('h3.checklist-title', array('data-checklist-id'=> $iChecklistId), $sChecklistName),
+            el('h3.checklist-title', array('data-checklist-id' => $iChecklistId), $sChecklistName),
             el('ol.checklist-items', null, $aChecklistItems),
             $sChecklistActions
         ));
@@ -361,9 +300,9 @@ class _Checklist extends DBObject implements \Knowitop\TemplateInterface
                 $iOrgId = $oHost->Get($sAttCode);
                 if ($iOrgId > 0)
                 {
-                    if ($iOrgId != $this->Get('obj_org_id'))
+                    if ($iOrgId != $this->Get('org_id'))
                     {
-                        $this->Set('obj_org_id', $iOrgId);
+                        $this->Set('org_id', $iOrgId);
                         if ($bUpdateOnChange)
                         {
                             $this->DBUpdate();
@@ -400,7 +339,7 @@ class _Checklist extends DBObject implements \Knowitop\TemplateInterface
                             $oCurrentPerson = MetaModel::GetObject('Person', UserRights::GetContactId(), false);
                             if ($oCurrentPerson)
                             {
-                                $this->Set('obj_org_id', $oCurrentPerson->Get($sAttCode));
+                                $this->Set('org_id', $oCurrentPerson->Get($sAttCode));
                             }
                         }
                     }
@@ -409,17 +348,17 @@ class _Checklist extends DBObject implements \Knowitop\TemplateInterface
         }
     }
 
-    public static function MapContextParam($sContextParam)
-    {
-        if ($sContextParam == 'org_id')
-        {
-            return 'obj_org_id';
-        }
-        else
-        {
-            return null;
-        }
-    }
+//    public static function MapContextParam($sContextParam)
+//    {
+//        if ($sContextParam === 'org_id')
+//        {
+//            return 'org_id';
+//        }
+//        else
+//        {
+//            return null;
+//        }
+//    }
 
 }
 

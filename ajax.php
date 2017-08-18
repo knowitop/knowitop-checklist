@@ -37,13 +37,14 @@ try
 
         case 'add_item':
             $sChecklistId = utils::ReadParam('checklist_id', '', false, 'integer');
-            $oChecklist = MetaModel::GetObject('Checklist', $sChecklistId);
+            $oChecklist = MetaModel::GetObject('Checklist', $sChecklistId, true); // Checklist must exists
             $sText = utils::ReadParam('text', '', false, 'string');
+            $bEditMode = utils::ReadParam('edit_mode', '') === '1' || ChecklistPlugin::IsEditInPlaceAllowed();
             $oItem = MetaModel::NewObject('ChecklistItem');
             $oItem->Set('checklist_id', $sChecklistId);
             $oItem->Set('text', $sText);
             $aResult['id'] = $oItem->DBWrite();
-            $aResult['html'] = $oChecklist->RenderItem($oItem);
+            $aResult['html'] = $oChecklist->RenderItem($oItem, $bEditMode);
             echo json_encode($aResult);
             break;
 
@@ -71,11 +72,11 @@ try
         case 'create_list':
             $sHostId = utils::ReadParam('host_id', '', false, 'integer');
             $sHostClass = utils::ReadParam('host_class', '', false, 'class');
-            $bEditMode = utils::ReadParam('edit_mode', '') === '1';
+            $oHostObj = MetaModel::GetObject($sHostClass, $sHostId, true); // Host object must exists
+            $bEditMode = utils::ReadParam('edit_mode', '') === '1'  || ChecklistPlugin::IsEditInPlaceAllowed();
             $oChecklist = MetaModel::NewObject('Checklist');
             $oChecklist->Set('title', Dict::S('Checklist:NewChecklistTitle'));
-            $oChecklist->Set('obj_key', $sHostId);
-            $oChecklist->Set('obj_class', $sHostClass);
+            $oChecklist->SetHostObject($oHostObj);
             $oChecklist->DBWrite();
             $aResult['id'] = $oChecklist->GetKey();
             $aResult['html'] .= $oChecklist->Render($bEditMode);
@@ -121,37 +122,22 @@ try
             $aSelected = utils::ReadParam('selected', '');
             $sHostId = utils::ReadParam('host_id', '', false, 'integer');
             $sHostClass = utils::ReadParam('host_class', '', false, 'class');
+            $oHostObj = MetaModel::GetObject($sHostClass, $sHostId, true); // Host object must exists
             $bEditMode = utils::ReadParam('edit_mode', '') === '1';
-
-            $oHostObj = MetaModel::GetObject($sHostClass, $sHostId, true);
-            //$aContext = $oHostObj->ToArgs('this'); // TODO: для замены плейсхолдеров в шаблонах
-
-            // if (!empty($sJson))
-            // {
-            //     $oWizardHelper = WizardHelper::FromJSON($sJson);
-            //     $oObj = $oWizardHelper->GetTargetObject();
-            //     $aContext = $oObj->ToArgs('this'); // TODO: для замены плейсхолдеров в шаблонах
-            // }
-            // else
-            // {
-            //     // Bug!!!!
-            //     $aContext = array();
-            // }
-
             foreach($aSelected as $iId)
             {
                 $oTemplate = MetaModel::GetObject('ChecklistTemplate', $iId, false);
                 if ($oTemplate !== null)
                 {
-                    //$oChecklist = $oTemplate->CreateTargetObject(array('item_object' => $oHostObj));
                     $oChecklist = MetaModel::NewObject('Checklist');
-                    $oChecklist->Set('obj_key', $oHostObj->GetKey());
-                    $oChecklist->Set('obj_class', $oHostObj->Get('finalclass'));
+//                    $oChecklist->Set('obj_key', $oHostObj->GetKey());
+//                    $oChecklist->Set('obj_class', $oHostObj->Get('finalclass'));
+//                    $oChecklist->SetDefaultOrgId();
+                    $oChecklist->SetHostObject($oHostObj);
                     $oChecklist->FillFromTemplate($oTemplate); // method from TemplateInterface
-                    $oChecklist->DBWrite();
+                    // $oChecklist->DBWrite(); // Write in FillFromTemplate
                     $aResult['id'] = $oChecklist->GetKey();
-                    $aResult['html'] .= $oChecklist->Render($bEditMode);
-//                    $aResult['html'] .= ChecklistPlugin::RenderChecklist($oChecklist, $bEditMode);
+                    $aResult['html'] .= $oChecklist->Render($bEditMode || ChecklistPlugin::IsEditInPlaceAllowed());
                 }
             }
             echo json_encode($aResult);
