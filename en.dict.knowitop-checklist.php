@@ -2,10 +2,69 @@
 /**
  * Localized data
  *
- * @copyright   Copyright (C) 2016 Vladimir Kunin <v.b.kunin@gmail.com>
- * @license     http://opensource.org/licenses/AGPL-3.0
+ * @copyright   Copyright (C) 2017 Vladimir Kunin <v.b.kunin@gmail.com>
  */
 
 Dict::Add('EN US', 'English', 'English', array(
-    // TODO: translate
+    'Class:Checklist' => 'Checklist',
+    'Class:Checklist+' => '',
+    'Class:Checklist/Attribute:obj_class' => 'obj class',
+    'Class:Checklist/Attribute:obj_class+' => '',
+    'Class:Checklist/Attribute:obj_key' => 'obj key',
+    'Class:Checklist/Attribute:obj_key+' => '',
+    'Class:Checklist/Attribute:obj_org_id' => 'obj org id',
+    'Class:Checklist/Attribute:obj_org_id+' => '',
+    'Class:Checklist/Attribute:title' => 'title',
+    'Class:Checklist/Attribute:title+' => '',
+    'Class:Checklist/Attribute:items_list' => 'items list',
+    'Class:Checklist/Attribute:items_list+' => '',
+
+    'Class:ChecklistItem' => 'Checklist Item',
+    'Class:ChecklistItem+' => '',
+    'Class:ChecklistItem/Attribute:checklist_id' => 'checklist id',
+    'Class:ChecklistItem/Attribute:checklist_id+' => '',
+    'Class:ChecklistItem/Attribute:checklist_title' => 'checklist_title',
+    'Class:ChecklistItem/Attribute:checklist_title+' => '',
+    'Class:ChecklistItem/Attribute:checklist_org_id' => 'checklist_org_id',
+    'Class:ChecklistItem/Attribute:checklist_org_id+' => '',
+    'Class:ChecklistItem/Attribute:text' => 'text',
+    'Class:ChecklistItem/Attribute:text+' => '',
+    'Class:ChecklistItem/Attribute:state' => 'state',
+    'Class:ChecklistItem/Attribute:state+' => '',
+    'Class:ChecklistItem/Attribute:created_at' => 'created at',
+    'Class:ChecklistItem/Attribute:created_at+' => '',
+    'Class:ChecklistItem/Attribute:checked_at' => 'checked at',
+    'Class:ChecklistItem/Attribute:checked_at+' => '',
+    'Class:ChecklistItem/Attribute:checklist_id_friendlyname' => 'checklist_id_friendlyname',
+    'Class:ChecklistItem/Attribute:checklist_id_friendlyname+' => '',
+
+    'Class:ChecklistTemplate' => 'Checklist Template',
+    'Class:ChecklistTemplate+' => 'Checklist Template',
+    'Class:ChecklistTemplate/Attribute:title' => 'Checklist title',
+    'Class:ChecklistTemplate/Attribute:title+' => '',
+    'Class:ChecklistTemplate/Attribute:items_text' => 'Checklist items',
+    'Class:ChecklistTemplate/Attribute:items_text+' => 'Checklist items, one for each row',
+
+    'Checklist:Button:NewItem' => 'Add an item...',
+    'Checklist:NewItemPlaceholder' => 'Add an item...',
+    'Checklist:NewChecklistTitle' => 'Checklist',
+    'Checklist:Button:Edit' => 'Edit',
+    'Checklist:Button:Delete' => 'Delete...',
+    'Checklist:Button:Save' => 'Save',
+    'Checklist:Button:Cancel' => 'Cancel',
+    'Checklist:Button:NewList' => 'Add Checklist',
+    'Checklist:Button:NewListFromTmpl' => 'Copy from template...',
+    'Checklist:TabTitle_Count' => 'Checklists (%1$s)',
+    'Checklist:EmptyTabTitle' => 'Checklists',
+    'Checklist:TabTitle+' => 'Related checklists',
+
+    'UI:Checklist:DlgPickATemplate' => 'Select template',
+    'UI:Checklist:DeleteDlg:Title' => 'Delete Checklist?',
+    'UI:Checklist:DeleteDlg:Msg' => 'This checklist will be permanently deleted. There is no way to get it back.',
+    'UI:Checklist:DeleteDlg:Delete' => 'Delete Checklist',
+    'UI:Checklist:DeleteDlg:Cancel' => 'Cancel',
+    'UI:ChecklistItem:DeleteDlg:Title' => 'Delete item?',
+    'UI:ChecklistItem:DeleteDlg:Msg' => 'This item will be permanently deleted.',
+    'UI:ChecklistItem:DeleteDlg:Delete' => 'Delete item',
+    'UI:ChecklistItem:DeleteDlg:Cancel' => 'Cancel',
 ));

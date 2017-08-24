@@ -32,7 +32,6 @@ function Checklist(param) {
 
     this.initItems();
     this.setListeners();
-
     // console.log(this);
 }
 
@@ -68,13 +67,15 @@ Checklist.prototype.saveTitle = function () {
             // TODO: show error message to user
         } else {
             this.titleInput.width(160);
-            this.titleContainer.children('.checklist-title-text').text(this.titleInput.val());
+            this.title = this.titleInput.val();
+            this.titleContainer.children('.checklist-title-text').text(this.title);
             this.titleContainer.removeClass('checklist-title-edit-mode');
         }
     }.bind(this));
 };
 
 Checklist.prototype.editTitle = function () {
+    this.titleInput.width(Math.max(this.titleInput.width(), this.titleContainer.children('.checklist-title-text').width() + 5));
     this.titleContainer.addClass('checklist-title-edit-mode');
     this.titleInput.focus();
 };
@@ -127,21 +128,6 @@ Checklist.prototype.setListeners = function () {
             case 'cancel_item':
                 this.cancelItem();
                 break;
-            case 'remove_list':
-                // todo: translate
-                var deleteMessage = 'Чек-лист и все его элементы будут удалены. Это действие необратимо.';
-                var checklist = this;
-                $('<div>' + deleteMessage + '</div>').dialog({
-                    modal: true,
-                    title: 'Удаление чек-листа',
-                    close: function() { $(this).remove(); },
-                    minWidth: 400,
-                    buttons: [
-                        { text: 'Отменить', click: function() { $(this).dialog('close'); } },
-                        { text: 'Удалить чек-лист', click: function() { checklist.remove(); $(this).dialog('close'); } }
-                    ]
-                });
-                break;
         }
     }.bind(this));
 
@@ -156,11 +142,25 @@ Checklist.prototype.setListeners = function () {
             case 'edit':
                 this.editTitle();
                 break;
-            case 'apply':
+            case 'save':
                 this.saveTitle();
                 break;
             case 'cancel':
                 this.cancelTitle();
+                break;
+            case 'delete':
+                var deleteMessage = Dict.S('UI:Checklist:DeleteDlg:Msg');
+                var checklist = this;
+                $('<div>' + deleteMessage + '</div>').dialog({
+                    modal: true,
+                    title: Dict.S('UI:Checklist:DeleteDlg:Title'),
+                    close: function() { $(this).remove(); },
+                    minWidth: 400,
+                    buttons: [
+                        { text: Dict.S('UI:Checklist:DeleteDlg:Cancel'), click: function() { $(this).dialog('close'); } },
+                        { text: Dict.S('UI:Checklist:DeleteDlg:Delete'), click: function() { checklist.remove(); $(this).dialog('close'); } }
+                    ]
+                });
                 break;
         }
     }.bind(this));
@@ -220,32 +220,30 @@ ChecklistItem.prototype.setListeners = function () {
         var action = $(event.target).data('item-action');
         switch (action) {
             case 'edit':
-                var input = this.container.children('.checklist-item-text-input');
-                input.width(Math.max(input.width(), this.container.children('.checklist-item-text').width() + 5));
+                this.textInput.width(Math.max(this.textInput.width(), this.container.children('.checklist-item-text').width() + 5));
                 this.container.addClass('checklist-item-edit-mode');
-                input.focus().val(input.val()); // put cursor at the end
+                this.textInput.focus(); // .val(this.textInput.val()); // put cursor at the end
                 break;
 
             case 'cancel':
                 this.cancel();
                 break;
 
-            case 'apply':
+            case 'save':
                 this.saveText();
                 break;
 
-            case 'remove':
-                // todo: translate
-                var deleteMessage = 'Элемент будет удалён из чек-листа без возможности восстановления.';
+            case 'delete':
+                var deleteMessage = Dict.S('UI:ChecklistItem:DeleteDlg:Msg');
                 var item = this;
                 $('<div>' + deleteMessage + '</div>').dialog({
                     modal: true,
-                    title: 'Удаление элемена',
+                    title: Dict.S('UI:ChecklistItem:DeleteDlg:Title'),
                     close: function() { $(this).remove(); },
                     minWidth: 400,
                     buttons: [
-                        { text: 'Отменить', click: function() { $(this).dialog('close'); } },
-                        { text: 'Удалить элемент', click: function() { item.remove(); $(this).dialog('close'); } }
+                        { text: Dict.S('UI:ChecklistItem:DeleteDlg:Cancel'), click: function() { $(this).dialog('close'); } },
+                        { text: Dict.S('UI:ChecklistItem:DeleteDlg:Delete'), click: function() { item.remove(); $(this).dialog('close'); } }
                     ]
                 });
                 break;
@@ -272,8 +270,9 @@ ChecklistItem.prototype.saveText = function () {
             console.error(err.message);
             // TODO: show error message to user
         } else {
-            this.container.children('.checklist-item-text-input').width(160);
-            this.container.children('.checklist-item-text').text(this.textInput.val());
+            this.textInput.width(160);
+            this.text = this.textInput.val();
+            this.container.children('.checklist-item-text').text(this.text);
             this.container.removeClass('checklist-item-edit-mode');
         }
     }.bind(this));
@@ -296,7 +295,7 @@ ChecklistItem.prototype.remove = function () {
 };
 
 ChecklistItem.prototype.cancel = function () {
-    this.container.children('.checklist-item-text-input').val(this.text).width(160);
+    this.textInput.val(this.text).width(160);
     this.container.removeClass('checklist-item-edit-mode');
 };
 
@@ -336,7 +335,6 @@ $(function () {
     // });
 });
 
-
 function SelectTemplate()
 {
     if ($('#template_button').attr('disabled')) return; // Disabled, do nothing
@@ -364,7 +362,7 @@ function SelectTemplate()
                 height: 'auto',
                 autoOpen: false,
                 modal: true,
-                title: Dict.S('UI:Dlg-PickATemplate'),
+                title: Dict.S('UI:Checklist:DlgPickATemplate'),
                 resizeStop: function(event, ui) { TemplateUpdateSizes(); },
                 close: function() { OnCloseTemplate(); }
             });
@@ -382,7 +380,6 @@ function SelectTemplate()
 function TemplateDoSearch()
 {
     var theMap = {};
-
     // Gather the parameters from the search form
     $('#fs_template_select :input').each( function() {
         if (this.name !== '')
@@ -395,7 +392,6 @@ function TemplateDoSearch()
         }
     });
     theMap['operation'] = 'search_template';
-    // theMap['log_attcode'] = sLogAttCode;
 
     // Run the query and get the result back directly in HTML
     $.post(checklistApi.url, theMap,

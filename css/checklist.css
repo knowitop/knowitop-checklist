@@ -161,35 +161,40 @@ li:hover .checklist-item .checklist-item-actions,
     display: inline-block;
 }
 
-
+/* item actions */
 [data-item-action='cancel'],
-[data-item-action='apply'],
+[data-item-action='save'],
 .checklist-item-edit-mode [data-item-action='edit'],
-.checklist-item-edit-mode [data-item-action='remove'],
+.checklist-item-edit-mode [data-item-action='delete'],
 
+/* checklist top actions */
 [data-checklist-action='cancel'],
-[data-checklist-action='apply'],
+[data-checklist-action='save'],
 .checklist-title-edit-mode [data-checklist-action='edit'],
+.checklist-title-edit-mode [data-checklist-action='delete'],
 
+/* checklist bottom actions */
 [data-checklist-action='save_item'],
 [data-checklist-action='cancel_item'],
-.checklist-item-edit-mode [data-checklist-action='remove_list'],
 .checklist-item-edit-mode [data-checklist-action='new_item']
 {
     display: none;
 }
 
+/* item actions */
 [data-item-action='edit'],
-[data-item-action='remove'],
+[data-item-action='delete'],
 .checklist-item-edit-mode [data-item-action='cancel'],
-.checklist-item-edit-mode [data-item-action='apply'],
+.checklist-item-edit-mode [data-item-action='save'],
 
+/* checklist top actions */
 .checklist-title-edit-mode [data-checklist-action='cancel'],
-.checklist-title-edit-mode [data-checklist-action='apply'],
+.checklist-title-edit-mode [data-checklist-action='save'],
 [data-checklist-action='edit'],
+[data-checklist-action='delete'],
 
+/* checklist bottom actions */
 [data-checklist-action='new_item'],
-[data-checklist-action='remove_list'],
 .checklist-item-edit-mode [data-checklist-action='save_item'],
 .checklist-item-edit-mode [data-checklist-action='cancel_item']
 {
