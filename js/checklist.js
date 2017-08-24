@@ -19,26 +19,31 @@ function ChecklistAPI(param) {
 
 function Checklist(param) {
     this.container = param.container ? $(param.container) : $("[data-checklist-id='" + param.id + "']");
+    this.titleContainer = this.container.find('.checklist-title');
+    this.titleInput = this.container.find("input[name='listTitle']");
+
     this.newItemContainer = this.container.find('.checklist-new-item');
     this.newItemInput = this.container.find("input[name='newItemText']");
 
     this.id = param.id || this.container.data('checklist-id');
-    this.name = param.name || this.container.data('checklist-name');
+    // this.name = param.name || this.container.data('checklist-name');
+    this.title = param.title || this.titleInput.val();
     this.items = [];
 
     this.initItems();
     this.setListeners();
 
-    console.log(this);
+    // console.log(this);
 }
 
 Checklist.prototype.remove = function () {
     var data = {
         operation: 'remove_list',
-        id: this.id
+        checklist_id: this.id
     };
     checklistApi.post(data, function (err, data) {
         if (err) {
+            alert(err.message);
             console.error(err.message);
             // TODO: show error to user
         } else {
@@ -48,35 +53,79 @@ Checklist.prototype.remove = function () {
     }.bind(this));
 };
 
+Checklist.prototype.saveTitle = function () {
+    var data = {
+        operation: 'edit_list',
+        checklist_id: this.id,
+        title: this.titleInput.val()
+    };
+    if (data.title.trim() === '') return this.titleInput.focus();
+    checklistApi.post(data, function (err, data) {
+        // console.log(data);
+        if (err) {
+            alert(err.message);
+            console.error(err.message);
+            // TODO: show error message to user
+        } else {
+            this.titleInput.width(160);
+            this.titleContainer.children('.checklist-title-text').text(this.titleInput.val());
+            this.titleContainer.removeClass('checklist-title-edit-mode');
+        }
+    }.bind(this));
+};
+
+Checklist.prototype.editTitle = function () {
+    this.titleContainer.addClass('checklist-title-edit-mode');
+    this.titleInput.focus();
+};
+
+Checklist.prototype.cancelTitle = function () {
+    this.titleInput.val(this.title);
+    this.titleContainer.removeClass('checklist-title-edit-mode');
+};
+
+Checklist.prototype.saveItem = function () {
+    var data = {
+        operation: 'add_item',
+        checklist_id: this.id,
+        text: this.newItemInput.val()
+    };
+    if (data.text.trim() === '') return this.newItemInput.focus();
+    checklistApi.post(data, function (err, data) {
+        if (err) {
+            alert(err.message);
+            console.error(err.message);
+            // TODO: show pretty error to user
+        } else {
+            this.container.find('.checklist-items').append('<li>' + data.html + '</li>');
+            this.items.push(new ChecklistItem({ id: data.id, listId: this.id }));
+            this.newItemInput.val('');
+        }
+    }.bind(this));
+};
+
+Checklist.prototype.newItem = function () {
+    this.newItemContainer.addClass('checklist-item-edit-mode');
+    this.newItemInput.focus();
+};
+
+Checklist.prototype.cancelItem = function () {
+    this.newItemInput.val('');
+    this.newItemContainer.removeClass('checklist-item-edit-mode');
+};
+
 Checklist.prototype.setListeners = function () {
     this.newItemContainer.find('a.checklist-btn').click(function (event) {
         var action = $(event.target).data('checklist-action');
         switch (action) {
             case 'new_item':
-                this.newItemContainer.addClass('checklist-item-edit-mode');
-                this.newItemInput.focus();
+                this.newItem();
                 break;
             case 'save_item':
-                var data = {
-                    operation: 'add_item',
-                    checklist_id: this.id,
-                    text: this.newItemInput.val()
-                };
-                checklistApi.post(data, function (err, data) {
-                    if (err) {
-                        alert(err.message);
-                        console.error(err.message);
-                        // TODO: show error to user
-                    } else {
-                        this.container.find('.checklist-items').append('<li>' + data.html + '</li>');
-                        this.items.push(new ChecklistItem({ id: data.id, listId: this.id }));
-                        this.newItemInput.val('');
-                    }
-                }.bind(this));
+                this.saveItem();
                 break;
             case 'cancel_item':
-                this.newItemInput.val('');
-                this.newItemContainer.removeClass('checklist-item-edit-mode');
+                this.cancelItem();
                 break;
             case 'remove_list':
                 // todo: translate
@@ -95,6 +144,31 @@ Checklist.prototype.setListeners = function () {
                 break;
         }
     }.bind(this));
+
+    this.newItemInput.keydown(function (event) {
+        if (event.keyCode === 13) this.saveItem();
+        else if (event.keyCode === 27) this.cancelItem();
+    }.bind(this));
+
+    this.titleContainer.find('a.checklist-btn').click(function (event) {
+        var action = $(event.target).data('checklist-action');
+        switch (action) {
+            case 'edit':
+                this.editTitle();
+                break;
+            case 'apply':
+                this.saveTitle();
+                break;
+            case 'cancel':
+                this.cancelTitle();
+                break;
+        }
+    }.bind(this));
+
+    this.titleInput.keydown(function (event) {
+        if (event.keyCode === 13) this.saveTitle();
+        else if (event.keyCode === 27) this.cancelTitle();
+    }.bind(this));
 };
 
 Checklist.prototype.initItems = function () {
@@ -106,10 +180,11 @@ Checklist.prototype.initItems = function () {
 function ChecklistItem(param) {
     this.container = param.container ? $(param.container) : $("[data-item-id='" + param.id + "']");
     this.checkbox = this.container.find("input[name='itemState']");
+    this.textInput = this.container.find("input[name='itemText']");
 
     this.listId = param.listId;
     this.id = param.id || this.container.data('item-id');
-    this.text = param.text || this.container.find("input[name='itemText']").val();
+    this.text = param.text || this.textInput.val();
     this.state = param.state || this.checkbox.prop('checked');
 
     this.setListeners();
@@ -130,6 +205,7 @@ ChecklistItem.prototype.setListeners = function () {
             if (err) {
                 this.state = !this.state; // rollback state when err
                 this.checkbox.prop('checked', this.state);
+                alert(err.message);
                 console.error(err.message);
                 alert(err.message);
                 // TODO: show error message to user
@@ -151,8 +227,7 @@ ChecklistItem.prototype.setListeners = function () {
                 break;
 
             case 'cancel':
-                this.container.children('.checklist-item-text-input').val(this.text).width(160);
-                this.container.removeClass('checklist-item-edit-mode');
+                this.cancel();
                 break;
 
             case 'apply':
@@ -161,7 +236,6 @@ ChecklistItem.prototype.setListeners = function () {
 
             case 'remove':
                 // todo: translate
-                // var deleteMessage = 'Чек-лист и все его элементы будут удалены. Это действие необратимо.';
                 var deleteMessage = 'Элемент будет удалён из чек-листа без возможности восстановления.';
                 var item = this;
                 $('<div>' + deleteMessage + '</div>').dialog({
@@ -177,23 +251,29 @@ ChecklistItem.prototype.setListeners = function () {
                 break;
         }
     }.bind(this));
+
+    this.textInput.keydown(function (event) {
+        if (event.keyCode === 13) this.saveText();
+        else if (event.keyCode === 27) this.cancel();
+    }.bind(this));
 };
 
 ChecklistItem.prototype.saveText = function () {
-    this.text = this.container.children('.checklist-item-text-input').val();
     var data = {
         operation: 'edit_item',
         id: this.id,
-        text: this.text
+        text: this.textInput.val()
     };
+    if (data.text.trim() === '') return this.textInput.focus();
     checklistApi.post(data, function (err, data) {
-        console.log(data);
+        // console.log(data);
         if (err) {
+            alert(err.message);
             console.error(err.message);
             // TODO: show error message to user
         } else {
             this.container.children('.checklist-item-text-input').width(160);
-            this.container.children('.checklist-item-text').text(this.text);
+            this.container.children('.checklist-item-text').text(this.textInput.val());
             this.container.removeClass('checklist-item-edit-mode');
         }
     }.bind(this));
@@ -206,12 +286,18 @@ ChecklistItem.prototype.remove = function () {
     };
     checklistApi.post(data, function (err, data) {
         if (err) {
+            alert(err.message);
             console.error(err);
         } else {
             console.log(data);
             this.container.parent('li').remove();
         }
     }.bind(this));
+};
+
+ChecklistItem.prototype.cancel = function () {
+    this.container.children('.checklist-item-text-input').val(this.text).width(160);
+    this.container.removeClass('checklist-item-edit-mode');
 };
 
 $(function () {
@@ -227,10 +313,13 @@ $(function () {
             edit_mode: window.location.search.substr(1).split('&')[0].split('=')[1] === 'modify' ? 1 : 0
         };
         checklistApi.post(postData, function(err, data) {
-            if (err) return console.error(err.message);
+            if (err) {
+                alert(err.message);
+                return console.error(err.message);
+            }
             console.log(data);
             $('.checklist-new-list').before(data.html);
-            new Checklist({ id: data.id });
+            (new Checklist({ id: data.id })).newItem();
         });
     });
 
@@ -385,7 +474,10 @@ function TemplateDoSelect()
         };
 
         checklistApi.post(postData, function(err, data) {
-            if (err) return console.error(err.message);
+            if (err) {
+                alert(err.message);
+                return console.error(err.message);
+            }
             console.log(data);
             $('.checklist-new-list').before(data.html);
             new Checklist({ id: data.id });

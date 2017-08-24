@@ -1,11 +1,28 @@
+
+.checklist {
+     margin: 1.4em;
+}
+
 .checklist-title {
+    /*padding-left: 2px;*/
+    padding-top: 2px;
+    padding-bottom: 3px;
+    padding-right: 160px;
+    position: relative;
+    min-height: 25px;
+    display: inline-block;
+}
+
+.checklist-title-text {
     font-size: 1em;
     font-weight: bold;
     color: #333;
     margin: 0;
 }
-.checklist {
-     margin: 1.4em;
+
+.checklist-title .checklist-title-text-input {
+    font-weight: bold;
+    font-family: Tahoma, Verdana, Arial, Helvetica;
 }
 
 .checklist-items {
@@ -37,12 +54,12 @@
     margin: 1.4em;
 }
 
-.checklist-actions {
-    padding-left: 20px;
-    /*padding-top: 2px;*/
-    position: relative;
-    min-height: 20px;
-}
+/*.checklist-actions {*/
+    /*padding-left: 20px;*/
+    /*!*padding-top: 2px;*!*/
+    /*position: relative;*/
+    /*min-height: 20px;*/
+/*}*/
 
 .checklist-item-checkbox {
     height: 18px;
@@ -83,12 +100,14 @@ a.checklist-btn:hover {
     color: #b22222;
 }
 
+.checklist-title-text-input,
 .checklist-item-text-input {
     width: 340px;
+    color: #333;
     /*border: 1px solid #CDD2D4;*/
     /*border-radius: 3px;*/
 }
-
+.checklist-title-text,
 .checklist-item-checked-at,
 .checklist-item-text {
     padding-top: 3px;
@@ -109,6 +128,8 @@ a.checklist-btn:hover {
     color: #696969;
 }
 
+.checklist-title-text,
+.checklist-title-edit-mode .checklist-title-text-input,
 .checklist-item-text,
 .checklist-item-state-complete .checklist-item-checked-at,
 .checklist-item-edit-mode .checklist-item-text-input {
@@ -116,12 +137,15 @@ a.checklist-btn:hover {
     margin-right: 10px;
 }
 
+.checklist-title-edit-mode .checklist-title-text,
+.checklist-title-text-input,
 .checklist-item-edit-mode .checklist-item-text,
 .checklist-item-edit-mode .checklist-item-checked-at,
 .checklist-item-text-input {
     display: none;
 }
 
+.checklist-title-actions,
 .checklist-item-actions {
     display: none;
     /*margin-left: 10px;*/
@@ -130,15 +154,23 @@ a.checklist-btn:hover {
     top: 2px;
 }
 
+.checklist-title:hover .checklist-title-actions,
+.checklist-title-edit-mode .checklist-title-actions,
 li:hover .checklist-item .checklist-item-actions,
 .checklist-item-edit-mode .checklist-item-actions {
     display: inline-block;
 }
 
+
 [data-item-action='cancel'],
 [data-item-action='apply'],
 .checklist-item-edit-mode [data-item-action='edit'],
 .checklist-item-edit-mode [data-item-action='remove'],
+
+[data-checklist-action='cancel'],
+[data-checklist-action='apply'],
+.checklist-title-edit-mode [data-checklist-action='edit'],
+
 [data-checklist-action='save_item'],
 [data-checklist-action='cancel_item'],
 .checklist-item-edit-mode [data-checklist-action='remove_list'],
@@ -151,6 +183,11 @@ li:hover .checklist-item .checklist-item-actions,
 [data-item-action='remove'],
 .checklist-item-edit-mode [data-item-action='cancel'],
 .checklist-item-edit-mode [data-item-action='apply'],
+
+.checklist-title-edit-mode [data-checklist-action='cancel'],
+.checklist-title-edit-mode [data-checklist-action='apply'],
+[data-checklist-action='edit'],
+
 [data-checklist-action='new_item'],
 [data-checklist-action='remove_list'],
 .checklist-item-edit-mode [data-checklist-action='save_item'],
