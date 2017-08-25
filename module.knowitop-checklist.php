@@ -6,7 +6,7 @@
 
 SetupWebPage::AddModule(
 	__FILE__, // Path to the current file, all other file names are relative to the directory containing this file
-	'knowitop-checklist/1.0.0',
+	'knowitop-checklist/1.0.1',
 	array(
 		// Identification
 		//
@@ -42,7 +42,6 @@ SetupWebPage::AddModule(
 		// Documentation
 		//
 		'doc.manual_setup' => '', // hyperlink to manual setup documentation, if any
-        // TODO: add libs licenses info
 		'doc.more_information' => '', // hyperlink to more information, if any
 
 		// Default settings
