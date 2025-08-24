@@ -1,0 +1,16 @@
+{
+  "config": {
+    "classmap-authoritative": true
+  },
+  "autoload": {
+    "psr-4": {
+      "Knowitop\\iTop\\Extension\\Checklist\\": "src"
+    }
+  },
+  "name": "knowitop/knowitop-checklist",
+  "type": "itop-extension",
+  "description": "Checklist module",
+  "require": {
+    "composer-runtime-api": "^2.0"
+  }
+}

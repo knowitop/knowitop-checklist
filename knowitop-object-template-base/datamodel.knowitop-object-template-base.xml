@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<itop_design xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.6">
+  <constants>
+  </constants>
+  <classes>
+    <class id="ObjectTemplate" _delta="define">
+      <parent>cmdbAbstractObject</parent>
+      <properties>
+        <category>bizmodel,searchable</category>
+        <abstract>true</abstract>
+        <key_type>autoincrement</key_type>
+        <db_table>objecttemplate</db_table>
+        <db_key_field>id</db_key_field>
+        <db_final_class_field>finalclass</db_final_class_field>
+        <naming>
+          <attributes>
+            <attribute id="name"/>
+          </attributes>
+        </naming>
+        <display_template/>
+        <icon>assets/img/template.png</icon>
+        <reconciliation>
+          <attributes>
+            <attribute id="name"/>
+          </attributes>
+        </reconciliation>
+      </properties>
+      <fields>
+        <field id="name" xsi:type="AttributeString">
+          <sql>name</sql>
+          <default_value/>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+        <field id="status" xsi:type="AttributeEnum">
+          <values>
+            <value id="active">active</value>
+            <value id="inactive">inactive</value>
+          </values>
+          <sql>status</sql>
+          <default_value>active</default_value>
+          <is_null_allowed>false</is_null_allowed>
+          <display_style>list</display_style>
+        </field>
+        <field id="description" xsi:type="AttributeText">
+          <sql>description</sql>
+          <default_value/>
+          <is_null_allowed>true</is_null_allowed>
+        </field>
+      </fields>
+      <methods>
+        <method id="DoCreateTargetObject">
+          <comment><![CDATA[	/**
+	 * @param \DBObject|null $oContextObject
+	 * @param array $aContextArgs
+	 *
+	 * @return \DBObject
+	 */]]></comment>
+          <static>false</static>
+          <access>protected</access>
+          <type>Internal</type>
+          <code><![CDATA[	abstract protected function DoCreateTargetObject(DBObject $oContextObject = null, array $aContextArgs = array());]]></code>
+        </method>
+        <method id="CreateTargetObject">
+          <comment><![CDATA[	/**
+	 * @param \DBObject|null $oContextObject
+	 * @param array $aContextArgs
+	 *
+	 * @return \DBObject
+	 * @throws \CoreException
+	 * @throws \CoreUnexpectedValue
+	 */]]></comment>
+          <static>false</static>
+          <access>public</access>
+          <type>Internal</type>
+          <code><![CDATA[	public final function CreateTargetObject(DBObject $oContextObject = null, array $aContextArgs = array())
+	{
+		if (!MetaModel::IsValidAttCode($this->GetTargetClass(), 'template_key'))
+		{
+			throw new Exception("Cannot create a new object from template: target template class '{$this->GetTargetClass()}' MUST have 'template_key' integer attcode for creating objects from template.");
+		}
+		$oTargetObject = $this->DoCreateTargetObject($oContextObject, $aContextArgs);
+		$this->ValidateTargetObject($oTargetObject);
+		$oTargetObject->Set('template_key', $this->GetKey());
+
+		return $oTargetObject;
+	}]]></code>
+        </method>
+        <method id="GetTargetClass">
+          <comment><![CDATA[	/**
+	 * @return string
+	 */]]></comment>
+          <static>false</static>
+          <access>public</access>
+          <type>Internal</type>
+          <code><![CDATA[	abstract public function GetTargetClass();]]></code>
+        </method>
+        <method id="ValidateTargetObject">
+          <comment><![CDATA[	/**
+	 * @param \DBObject $oTargetObject
+	 *
+	 * @throws \CoreException
+	 * @throws \Exception
+	 */]]></comment>
+          <static>false</static>
+          <access>protected</access>
+          <type>Internal</type>
+          <code><![CDATA[	protected function ValidateTargetObject(DBObject $oTargetObject)
+	{
+		if (!MetaModel::IsParentClass($this->GetTargetClass(), get_class($oTargetObject)))
+		{
+			$sClass = get_class($oTargetObject);
+			throw new Exception("Cannot create a new object from template: class '$sClass' is not child for target template class '{$this->GetTargetClass()}'");
+		}
+	}
+]]></code>
+        </method>
+        <method id="DisplayBareProperties">
+          <static>false</static>
+          <access>public</access>
+          <type>Overload-cmdbAbstractObject</type>
+          <code><![CDATA[	public function DisplayBareProperties(WebPage $oPage, $bEditMode = false, $sPrefix = '', $aExtraParams = array())
+	{
+		if ($bEditMode)
+		{
+			$sLabel = Dict::S('UI:'.get_class($this).':HelpBlockLabel');
+			$sContent = Dict::S('UI:'.get_class($this).':HelpBlockContent', '');
+			if (!empty($sContent))
+			{
+				$oHtml = new \Combodo\iTop\Application\UI\Base\Component\Html\Html($sContent);
+				$oUIBlock = new \Combodo\iTop\Application\UI\Base\Component\CollapsibleSection\CollapsibleSection($sLabel, [$oHtml]);
+				$oPage->AddUiBlock($oUIBlock);
+			}
+		}
+
+		return parent::DisplayBareProperties($oPage, $bEditMode, $sPrefix, $aExtraParams);
+	}]]></code>
+        </method>
+      </methods>
+      <presentation>
+        <details>
+          <items>
+            <item id="col:col1">
+              <rank>10</rank>
+              <items>
+                <item id="fieldset:ObjectTemplate:baseinfo">
+                  <rank>10</rank>
+                  <items>
+                    <item id="name">
+                      <rank>10</rank>
+                    </item>
+                    <item id="status">
+                      <rank>20</rank>
+                    </item>
+                    <item id="description">
+                      <rank>30</rank>
+                    </item>
+                  </items>
+                </item>
+              </items>
+            </item>
+            <item id="col:col2">
+              <rank>20</rank>
+              <items>
+                <item id="fieldset:ObjectTemplate:template">
+                  <rank>10</rank>
+                  <items>
+                  </items>
+                </item>
+              </items>
+            </item>
+          </items>
+        </details>
+        <dafault_search>
+          <items>
+            <item id="name">
+              <rank>10</rank>
+            </item>
+            <item id="status">
+              <rank>20</rank>
+            </item>
+          </items>
+        </dafault_search>
+        <search>
+          <items>
+            <item id="name">
+              <rank>10</rank>
+            </item>
+            <item id="status">
+              <rank>20</rank>
+            </item>
+          </items>
+        </search>
+        <list>
+          <items>
+            <item id="status">
+              <rank>10</rank>
+            </item>
+            <item id="description">
+              <rank>20</rank>
+            </item>
+          </items>
+        </list>
+      </presentation>
+    </class>
+  </classes>
+  <menus>
+    <menu id="AllObjectTemplates" xsi:type="DashboardMenuNode" _delta="define">
+      <rank>100</rank>
+      <parent>Catalogs</parent>
+      <definition>
+        <layout>DashboardLayoutOneCol</layout>
+        <title>Menu:ObjectTemplate</title>
+        <cells>
+          <cell id="0">
+            <rank>0</rank>
+            <dashlets>
+              <dashlet id="ObjectTemplateHeader" xsi:type="DashletHeaderStatic">
+                <rank>0</rank>
+                <title>Menu:ObjectTemplate+</title>
+                <icon>knowitop-object-template-base/assets/img/template.png</icon>
+              </dashlet>
+            </dashlets>
+          </cell>
+        </cells>
+      </definition>
+    </menu>
+  </menus>
+  <user_rights>
+    <groups>
+    </groups>
+    <profiles>
+    </profiles>
+  </user_rights>
+</itop_design>

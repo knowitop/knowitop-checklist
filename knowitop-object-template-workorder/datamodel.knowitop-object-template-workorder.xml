@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<itop_design xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.6">
+  <constants>
+  </constants>
+  <classes>
+    <class id="WorkOrderTemplate" _delta="define">
+      <parent>ObjectTemplate</parent>
+      <properties>
+        <category>bizmodel,searchable</category>
+        <abstract>false</abstract>
+        <key_type>autoincrement</key_type>
+        <db_table>objecttemplate_workorder</db_table>
+        <db_key_field>id</db_key_field>
+        <db_final_class_field/>
+        <naming>
+          <attributes>
+            <attribute id="name"/>
+          </attributes>
+        </naming>
+        <display_template/>
+        <reconciliation>
+          <attributes>
+            <attribute id="name"/>
+          </attributes>
+        </reconciliation>
+      </properties>
+      <fields>
+        <field id="wo_name" xsi:type="AttributeString">
+          <sql>wo_name</sql>
+          <default_value/>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+        <field id="wo_description" xsi:type="AttributeText">
+          <sql>wo_description</sql>
+          <default_value/>
+          <is_null_allowed>false</is_null_allowed>
+        </field>
+        <field id="wo_team_id" xsi:type="AttributeExternalKey">
+          <filter>SELECT Team</filter>
+          <sql>wo_team_id</sql>
+          <target_class>Team</target_class>
+          <is_null_allowed>false</is_null_allowed>
+          <on_target_delete>DEL_MANUAL</on_target_delete>
+        </field>
+        <field id="wo_team_name" xsi:type="AttributeExternalField">
+          <extkey_attcode>wo_team_id</extkey_attcode>
+          <target_attcode>name</target_attcode>
+        </field>
+        <field id="wo_agent_id" xsi:type="AttributeExternalKey">
+          <filter><![CDATA[SELECT Person AS p JOIN lnkPersonToTeam AS l ON l.person_id = p.id JOIN Team AS t ON l.team_id = t.id WHERE t.id = :this->wo_team_id]]></filter>
+          <dependencies>
+            <attribute id="wo_team_id"/>
+          </dependencies>
+          <sql>wo_agent_id</sql>
+          <target_class>Person</target_class>
+          <is_null_allowed>true</is_null_allowed>
+          <on_target_delete>DEL_MANUAL</on_target_delete>
+          <allow_target_creation>false</allow_target_creation>
+        </field>
+        <field id="wo_agent_name" xsi:type="AttributeExternalField">
+          <extkey_attcode>wo_agent_id</extkey_attcode>
+          <target_attcode>name</target_attcode>
+        </field>
+        <field id="wo_duration" xsi:type="AttributeDuration">
+          <sql>wo_duration</sql>
+          <default_value>3600</default_value>
+          <is_null_allowed>true</is_null_allowed>
+        </field>
+      </fields>
+      <methods>
+        <method id="DoCreateTargetObject">
+          <comment><![CDATA[	/**
+	 * @param \DBObject|null $oTicket
+	 * @param array $aContextArgs
+	 *
+	 * @return \WorkOrder
+	 * @throws \ArchivedObjectException
+	 * @throws \CoreException
+	 * @throws \Exception
+	 */]]></comment>
+          <static>false</static>
+          <access>protected</access>
+          <type>Internal</type>
+          <code><![CDATA[	protected function DoCreateTargetObject(DBObject $oTicket = null, array $aContextArgs = array())
+	{
+		$this->ValidateContextObject($oTicket);
+		$aParams = array_merge($this->ToArgs('template'), $oTicket->ToArgs('context'), $aContextArgs);
+		$aValues = [
+			'ticket_id' => $oTicket->GetKey(),
+			'name' => MetaModel::ApplyParams($this->Get('wo_name'), $aParams),
+			'description' => MetaModel::ApplyParams($this->Get('wo_description'), $aParams),
+			'team_id' => $this->Get('wo_team_id'),
+			'agent_id' => $this->Get('wo_agent_id'),
+			'start_date' => time(),
+			'end_date' => time() + $this->Get('wo_duration')
+		];
+		/** @var \WorkOrder $oWorkOrder */
+		$oWorkOrder = MetaModel::NewObject('WorkOrder', $aValues);
+
+		return $oWorkOrder;
+	}]]></code>
+        </method>
+        <method id="ValidateContextObject">
+          <comment><![CDATA[	/**
+	 * @param \DBObject $oTicket
+	 *
+	 * @return void
+	 * @throws \Exception
+	 */]]></comment>
+          <static>false</static>
+          <access>public</access>
+          <type>Internal</type>
+          <code><![CDATA[	public function ValidateContextObject(DBObject $oTicket)
+	{
+		if (is_null($oTicket))
+		{
+			throw new Exception('Cannot create a new '.$this->GetTargetClass().' from '.get_class($this).'::'.$this->GetKey().': the context object is not passed (Ticket expected).');
+		}
+		if (!($oTicket instanceof Ticket))
+		{
+			throw new Exception('Cannot create a new '.$this->GetTargetClass().' from '.get_class($this).'::'.$this->GetKey().': the context object is '.get_class($oTicket).' (Ticket expected).');
+		}
+	}]]></code>
+        </method>
+        <method id="GetTargetClass">
+          <comment><![CDATA[	/**
+	 * @return mixed
+	 */]]></comment>
+          <static>false</static>
+          <access>public</access>
+          <type>Internal</type>
+          <code><![CDATA[	public function GetTargetClass()
+	{
+		return 'WorkOrder';
+	}]]></code>
+        </method>
+      </methods>
+      <presentation>
+        <details>
+          <items>
+            <item id="col:col1">
+              <rank>10</rank>
+              <items>
+                <item id="fieldset:ObjectTemplate:baseinfo">
+                  <rank>10</rank>
+                  <items>
+                    <item id="name">
+                      <rank>10</rank>
+                    </item>
+                    <item id="status">
+                      <rank>20</rank>
+                    </item>
+                    <item id="description">
+                      <rank>30</rank>
+                    </item>
+                  </items>
+                </item>
+              </items>
+            </item>
+            <item id="col:col2">
+              <rank>20</rank>
+              <items>
+                <item id="fieldset:ObjectTemplate:template">
+                  <rank>10</rank>
+                  <items>
+                    <item id="wo_name">
+                      <rank>10</rank>
+                    </item>
+                    <item id="wo_description">
+                      <rank>20</rank>
+                    </item>
+                    <item id="wo_team_id">
+                      <rank>30</rank>
+                    </item>
+                    <item id="wo_agent_id">
+                      <rank>40</rank>
+                    </item>
+                    <item id="wo_duration">
+                      <rank>50</rank>
+                    </item>
+                  </items>
+                </item>
+              </items>
+            </item>
+          </items>
+        </details>
+        <default_search>
+          <items>
+            <item id="name">
+              <rank>10</rank>
+            </item>
+            <item id="status">
+              <rank>20</rank>
+            </item>
+            <item id="wo_team_id">
+              <rank>30</rank>
+            </item>
+          </items>
+        </default_search>
+        <search>
+          <items>
+            <item id="name">
+              <rank>10</rank>
+            </item>
+            <item id="status">
+              <rank>20</rank>
+            </item>
+            <item id="wo_team_id">
+              <rank>30</rank>
+            </item>
+            <item id="wo_agent_id">
+              <rank>40</rank>
+            </item>
+          </items>
+        </search>
+        <list>
+          <items>
+            <item id="status">
+              <rank>10</rank>
+            </item>
+            <item id="wo_team_id">
+              <rank>20</rank>
+            </item>
+            <item id="wo_agent_id">
+              <rank>30</rank>
+            </item>
+          </items>
+        </list>
+      </presentation>
+    </class>
+    <class id="WorkOrder">
+      <fields>
+        <field id="template_key" xsi:type="AttributeInteger" _delta="define">
+          <sql>template_key</sql>
+          <default_value/>
+          <is_null_allowed>true</is_null_allowed>
+        </field>
+      </fields>
+    </class>
+  </classes>
+  <menus>
+    <menu id="AllObjectTemplates" _delta="if_exists">
+      <definition>
+        <cells>
+          <cell id="0">
+            <dashlets>
+              <dashlet id="WorkOrderTemplateBadge" xsi:type="DashletBadge" _delta="define">
+                <rank>1</rank>
+                <class>WorkOrderTemplate</class>
+              </dashlet>
+            </dashlets>
+          </cell>
+        </cells>
+      </definition>
+    </menu>
+  </menus>
+  <user_rights>
+    <groups>
+    </groups>
+    <profiles>
+    </profiles>
+  </user_rights>
+</itop_design>
