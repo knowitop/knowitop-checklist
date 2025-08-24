@@ -2,6 +2,8 @@
 
 ## Чек-листы для Combodo iTop
 
+Быстрые чек-листы для удобного контроля задач.
+
 Модуль позволяет добавить чек-листы к любым объектам в системе, будь то Запрос, Наряда на работу или даже Конфигурационная единица. Вы можете создавать чек-листы с нуля или добавить их из заранее подготовленных шаблонов.
 
 Может использоваться самостоятельно или в составе расширения для [Управления работами](https://github.com/knowitop/knowitop-workorder-mgmt).
@@ -14,6 +16,8 @@
 
 
 ## Checklists for Combodo iTop
+
+Quick checklists for convenient task management.
 
 The extension allows adding checklists to any objects in the system, be it a Request, a Work Order, or even a Configuration Item. You can create checklists from scratch or add them from pre-made templates.
 
